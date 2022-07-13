@@ -3,9 +3,10 @@
 
     Copyright (c) 2015 by Wenzel Jakob
 */
-
+ 
 #include <nori/accel.h>
 #include <Eigen/Geometry>
+#include <nori/timer.h>
 
 NORI_NAMESPACE_BEGIN
 
@@ -16,8 +17,109 @@ void Accel::addMesh(Mesh *mesh) {
     m_bbox = m_mesh->getBoundingBox();
 }
 
+OctNode* Accel::buildOctree(const BoundingBox3f& box, const std::vector<uint32_t>& tri_ind, unsigned depth){
+    if(tri_ind.size() <= 10 || depth >= octree_maxDepth){
+        nodes_num += 1;
+        leaf_num += 1;
+        tris_per_leaf += tri_ind.size();
+        return new OctNode(box, tri_ind);
+    }
+
+    // divide bounding box
+    std::vector<BoundingBox3f> bbox_list(8);
+    // auto center = box.getCenter();
+    // for(size_t i=0; i<8; ++i){
+    //     auto corner = box.getCorner(i);
+    //     decltype(corner) st, ed;
+    //     for(size_t j=0; j<3; ++j){
+    //         st[j] = std::min(center[j], corner[j]); 
+    //         ed[j] = std::max(center[j], corner[j]);    
+    //     }
+    //     bbox_list[i] = BoundingBox3f(st, ed);
+    // }
+    Point3f extents = box.getExtents() / 2.0f;
+    float dx = extents[0], dy = extents[1], dz = extents[2];
+    int n = 0;
+    for(float x : {0.f, dx})
+        for(float y : {0.f, dy})
+            for(float z : {0.f, dz}){
+                Point3f ori = box.min + Point3f(x, y, z);
+                bbox_list[n++] = BoundingBox3f(ori, ori + extents);
+            }
+
+    // judge overlap
+    std::vector<uint32_t> tri_list[8];
+    for(auto ind : tri_ind){
+        for(size_t i=0; i<8; ++i){
+            if(bbox_list[i].overlaps(m_mesh->getBoundingBox(ind)))
+                tri_list[i].push_back(ind);
+        }
+    }
+
+    nodes_num += 1;
+    OctNode *node = new OctNode(box);
+    for(size_t i=0; i<8; ++i)
+        if(tri_list[i].size() > 0)
+            node->children.push_back(buildOctree(bbox_list[i], tri_list[i], depth + 1));
+    
+    return node;
+}
+
 void Accel::build() {
     /* Nothing to do here for now */
+    uint32_t len_tri = m_mesh->getTriangleCount();
+
+    std::vector<uint32_t> vec_tri(len_tri);
+    for(uint32_t i=0; i<len_tri; ++i)
+        vec_tri[i] = i;
+    
+    Timer timer_build;
+    m_root = buildOctree(m_bbox, vec_tri, 0);
+    std::cout << "Octree done. (took " << timer_build.elapsedString() << ")" << std::endl;
+    tris_per_leaf /= leaf_num;
+    printOctreeInfo();
+}
+
+bool Accel::traverseOctree(Ray3f &ray, OctNode* node, Intersection &its, uint32_t &f, bool shadowRay) const{
+    bool hit = false;
+    if(node->children.size()==0){
+        for(auto idx : node->triangle_List){
+            float u, v, t;
+            if (m_mesh->rayIntersect(idx, ray, u, v, t) && t < ray.maxt) {
+                if (shadowRay)
+                    return true;
+                ray.maxt = its.t = t;
+                its.uv = Point2f(u, v);
+                its.mesh = m_mesh;
+                f = idx;
+                hit = true;
+            }            
+        }
+        return hit;
+    }
+
+    for(OctNode* child : node->children){
+        if(child->oct_bbox.rayIntersect(ray) && traverseOctree(ray, child, its, f, shadowRay))
+            hit = true;
+    }
+    return hit;
+    
+    // std::vector<std::pair<OctNode*, float> > dis2ray;
+    // for(OctNode* child : node->children){
+    //     float near, far;
+    //     if(child->oct_bbox.rayIntersect(ray, near, far));
+    //         dis2ray.push_back(std::make_pair(child, near));
+    // }
+
+    // std::sort(dis2ray.begin(), dis2ray.end(), [](const auto &n1, const auto &n2){
+    //     return n1.second < n2.second;
+    // });
+
+    // for(auto child : dis2ray){
+    //     if(traverseOctree(ray, child.first, its, f, shadowRay))
+    //         return true;
+    // }
+    // return false;
 }
 
 bool Accel::rayIntersect(const Ray3f &ray_, Intersection &its, bool shadowRay) const {
@@ -25,13 +127,16 @@ bool Accel::rayIntersect(const Ray3f &ray_, Intersection &its, bool shadowRay) c
     uint32_t f = (uint32_t) -1;      // Triangle index of the closest intersection
 
     Ray3f ray(ray_); /// Make a copy of the ray (we will need to update its '.maxt' value)
+    
+    if(m_root->oct_bbox.rayIntersect(ray))
+        foundIntersection = traverseOctree(ray, m_root, its, f, shadowRay);
 
     /* Brute force search through all triangles */
-    for (uint32_t idx = 0; idx < m_mesh->getTriangleCount(); ++idx) {
+/*    for (uint32_t idx = 0; idx < m_mesh->getTriangleCount(); ++idx) {
         float u, v, t;
         if (m_mesh->rayIntersect(idx, ray, u, v, t)) {
-            /* An intersection was found! Can terminate
-               immediately if this is a shadow ray query */
+             An intersection was found! Can terminate
+               immediately if this is a shadow ray query 
             if (shadowRay)
                 return true;
             ray.maxt = its.t = t;
@@ -40,7 +145,8 @@ bool Accel::rayIntersect(const Ray3f &ray_, Intersection &its, bool shadowRay) c
             f = idx;
             foundIntersection = true;
         }
-    }
+    }*/
+
 
     if (foundIntersection) {
         /* At this point, we now know that there is an intersection,

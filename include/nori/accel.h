@@ -7,8 +7,23 @@
 #pragma once
 
 #include <nori/mesh.h>
+#include <vector>
 
 NORI_NAMESPACE_BEGIN
+
+struct OctNode{
+    BoundingBox3f oct_bbox;
+
+    std::vector<uint32_t> triangle_List;
+
+    std::vector<OctNode*> children;
+
+    OctNode() = default;
+
+    OctNode(BoundingBox3f bbox) : oct_bbox(bbox){}
+
+    OctNode(BoundingBox3f bbox, std::vector<uint32_t> tri_List) : oct_bbox(bbox), triangle_List(tri_List){}
+};
 
 /**
  * \brief Acceleration data structure for ray intersection queries
@@ -31,7 +46,7 @@ public:
 
     /// Return an axis-aligned box that bounds the scene
     const BoundingBox3f &getBoundingBox() const { return m_bbox; }
-
+ 
     /**
      * \brief Intersect a ray against all triangles stored in the scene and
      * return detailed intersection information
@@ -53,9 +68,25 @@ public:
      */
     bool rayIntersect(const Ray3f &ray, Intersection &its, bool shadowRay) const;
 
+    OctNode* buildOctree(const BoundingBox3f& box, const std::vector<uint32_t>& tri_ind, unsigned depth);
+
+    bool traverseOctree(Ray3f &ray, OctNode* node, Intersection &its, uint32_t &f, bool shadowRay) const;
+
+    void printOctreeInfo() const{
+        std::cout << "Nodes_num : " << nodes_num << "\nLeaf_num : " << leaf_num << \
+        "\ntris_num_per_leaf : " << tris_per_leaf << std::endl;
+    }
+
 private:
+    OctNode* buildOctree(const BoundingBox3f& box, const std::vector<uint32_t>& tri_ind);
+
     Mesh         *m_mesh = nullptr; ///< Mesh (only a single one for now)
     BoundingBox3f m_bbox;           ///< Bounding box of the entire scene
+    OctNode      *m_root = nullptr;
+    unsigned nodes_num = 0;
+    unsigned leaf_num = 0;
+    unsigned tris_per_leaf = 0;
+    unsigned octree_maxDepth = 8;
 };
 
 NORI_NAMESPACE_END
