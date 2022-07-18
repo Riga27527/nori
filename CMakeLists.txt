@@ -89,6 +89,7 @@ add_executable(nori
   src/mirror.cpp
   src/dielectric.cpp
   src/normals.cpp
+  src/simple.cpp
 )
 
 add_definitions(${NANOGUI_EXTRA_DEFS})
@@ -125,5 +126,6 @@ endif()
 
 target_compile_features(warptest PRIVATE cxx_std_17)
 target_compile_features(nori PRIVATE cxx_std_17)
-
+# set(CMAKE_BUILD_TYPE Release)
+# target_compile_options(nori PUBLIC -ffast-math -march=native)
 # vim: set et ts=2 sw=2 ft=cmake nospell:

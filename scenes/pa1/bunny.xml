@@ -9,7 +9,7 @@
 
     <!-- Load the Stanford bunny (https://graphics.stanford.edu/data/3Dscanrep/) -->
 	<mesh type="obj">
-		<string name="filename" value="bunny.obj"/>
+		<string name="filename" value="../model/bunny.obj"/>
 		<bsdf type="diffuse"/>
 	</mesh>
 
