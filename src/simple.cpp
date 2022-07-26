@@ -20,17 +20,15 @@ public:
         Ray3f rayDir = Ray3f(shadePos, dir);
         if(scene->rayIntersect(rayDir))
         	return Color3f(0.0f);
-       	return Color3f(1.0f);
-/*        Normal3f shadeNormal = its.shFrame.n.normalized();
+
+        Normal3f shadeNormal = its.shFrame.n.normalized();
         float distance = dir.norm();
         float cosTheta = shadeNormal.dot(dir.normalized());
-        
-        
+       	
         Color3f nom = light_energy * INV_PI * INV_PI * std::max(0.0f, cosTheta);
         float denom = 4.0f * distance * distance;
 
-		return nom / denom;
-*/		
+		return nom / denom;		
 	}
 
 	std::string toString() const {

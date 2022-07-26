@@ -14,18 +14,21 @@
 NORI_NAMESPACE_BEGIN
 
 Scene::Scene(const PropertyList &) {
-    m_accel = new Accel();
+    // m_accel = new Accel();
+    m_bvh = new BVH();
 }
 
 Scene::~Scene() {
-    delete m_accel;
+    // delete m_accel;
+    delete m_bvh;
     delete m_sampler;
     delete m_camera;
     delete m_integrator;
 }
 
 void Scene::activate() {
-    m_accel->build();
+    // m_accel->build();
+    m_bvh->build();
 
     if (!m_integrator)
         throw NoriException("No integrator was specified!");
@@ -47,13 +50,17 @@ void Scene::addChild(NoriObject *obj) {
     switch (obj->getClassType()) {
         case EMesh: {
                 Mesh *mesh = static_cast<Mesh *>(obj);
-                m_accel->addMesh(mesh);
+                // m_accel->addMesh(mesh);
+                m_bvh->addMesh(mesh);
                 m_meshes.push_back(mesh);
+                if(mesh->isEmitter())
+                    m_lights.push_back(mesh);
             }
             break;
         
         case EEmitter: {
-                //Emitter *emitter = static_cast<Emitter *>(obj);
+                // Emitter *emitter = static_cast<Emitter *>(obj);
+                // m_lights.push_back(emitter);
                 /* TBD */
                 throw NoriException("Scene::addChild(): You need to implement this for emitters");
             }

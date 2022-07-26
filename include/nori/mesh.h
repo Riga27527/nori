@@ -9,6 +9,7 @@
 #include <nori/object.h>
 #include <nori/frame.h>
 #include <nori/bbox.h>
+#include <nori/dpdf.h>
 
 NORI_NAMESPACE_BEGIN
 
@@ -51,6 +52,7 @@ struct Intersection {
     std::string toString() const;
 };
 
+
 /**
  * \brief Triangle mesh
  *
@@ -85,6 +87,11 @@ public:
     //// Return the centroid of the given triangle
     Point3f getCentroid(uint32_t index) const;
 
+    void sampleMesh(Sampler *sampler, Point3f &point, Normal3f &normal) const;
+
+    float getPdf() const{
+        return dpdf.getNormalization();
+    }
     /** \brief Ray-triangle intersection test
      *
      * Uses the algorithm by Moeller and Trumbore discussed at
@@ -164,6 +171,7 @@ protected:
     BSDF         *m_bsdf = nullptr;      ///< BSDF of the surface
     Emitter    *m_emitter = nullptr;     ///< Associated emitter, if any
     BoundingBox3f m_bbox;                ///< Bounding box of the mesh
+    DiscretePDF dpdf;
 };
 
 NORI_NAMESPACE_END

@@ -10,6 +10,7 @@
 #include <nori/emitter.h>
 #include <nori/warp.h>
 #include <Eigen/Geometry>
+#include <nori/dpdf.h>
 
 NORI_NAMESPACE_BEGIN
 
@@ -21,6 +22,15 @@ Mesh::~Mesh() {
 }
 
 void Mesh::activate() {
+    if(m_emitter){
+        uint32_t tri_size = getTriangleCount();
+        dpdf = DiscretePDF(tri_size);
+        for(uint32_t i=0; i<tri_size; ++i){
+            float area = surfaceArea(i);
+            dpdf.append(area);
+        }
+        dpdf.normalize();
+    }
     if (!m_bsdf) {
         /* If no material was assigned, instantiate a diffuse BRDF */
         m_bsdf = static_cast<BSDF *>(
@@ -34,6 +44,26 @@ float Mesh::surfaceArea(uint32_t index) const {
     const Point3f p0 = m_V.col(i0), p1 = m_V.col(i1), p2 = m_V.col(i2);
 
     return 0.5f * Vector3f((p1 - p0).cross(p2 - p0)).norm();
+}
+
+void Mesh::sampleMesh(Sampler *sampler, Point3f &point, Normal3f &normal) const{
+    uint32_t index = dpdf.sample(sampler->next1D());
+
+    auto sample = sampler->next2D();
+    float tmp = std::sqrt(1.0f - sample.x());
+    float alpha = 1.0f - tmp;
+    float beta = sample.y() * tmp;
+    float gamma = 1.0f - alpha - beta;
+    
+    uint32_t i0 = m_F(0, index), i1 = m_F(1, index), i2 = m_F(2, index);
+    const Point3f p0 = m_V.col(i0), p1 = m_V.col(i1), p2 = m_V.col(i2);
+    point = p0 * alpha + p1 * beta + p2 * gamma;
+    if(m_N.size() > 0)
+        normal = (alpha * m_N.col(i0) + 
+                            beta * m_N.col(i1) + 
+                            gamma * m_N.col(i2)).normalized();
+    else
+        normal = (p1 - p0).cross(p2 - p0).normalized();
 }
 
 bool Mesh::rayIntersect(uint32_t index, const Ray3f &ray, float &u, float &v, float &t) const {

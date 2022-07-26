@@ -44,7 +44,7 @@ add_executable(nori
   include/nori/bitmap.h
   include/nori/block.h
   include/nori/bsdf.h
-  include/nori/accel.h
+#  include/nori/accel.h
   include/nori/camera.h
   include/nori/color.h
   include/nori/common.h
@@ -64,11 +64,12 @@ add_executable(nori
   include/nori/transform.h
   include/nori/vector.h
   include/nori/warp.h
+  include/nori/bvh.h
 
   # Source code files
   src/bitmap.cpp
   src/block.cpp
-  src/accel.cpp
+#  src/accel.cpp
   src/chi2test.cpp
   src/common.cpp
   src/diffuse.cpp
@@ -90,6 +91,10 @@ add_executable(nori
   src/dielectric.cpp
   src/normals.cpp
   src/simple.cpp
+  src/ao.cpp
+  src/area.cpp
+  src/whitted.cpp
+  src/bvh.cpp
 )
 
 add_definitions(${NANOGUI_EXTRA_DEFS})

@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <nori/accel.h>
+#include <nori/bvh.h>
 
 NORI_NAMESPACE_BEGIN
 
@@ -26,7 +26,8 @@ public:
     virtual ~Scene();
 
     /// Return a pointer to the scene's kd-tree
-    const Accel *getAccel() const { return m_accel; }
+    // const Accel *getAccel() const { return m_accel; }
+    const BVH *getAccel() const { return m_bvh; }
 
     /// Return a pointer to the scene's integrator
     const Integrator *getIntegrator() const { return m_integrator; }
@@ -46,6 +47,7 @@ public:
     /// Return a reference to an array containing all meshes
     const std::vector<Mesh *> &getMeshes() const { return m_meshes; }
 
+    const std::vector<Mesh *> &getLights() const { return m_lights; }
     /**
      * \brief Intersect a ray against all triangles stored in the scene
      * and return detailed intersection information
@@ -61,7 +63,7 @@ public:
      * \return \c true if an intersection was found
      */
     bool rayIntersect(const Ray3f &ray, Intersection &its) const {
-        return m_accel->rayIntersect(ray, its, false);
+        return m_bvh->rayIntersect(ray, its, false);
     }
 
     /**
@@ -81,12 +83,12 @@ public:
      */
     bool rayIntersect(const Ray3f &ray) const {
         Intersection its; /* Unused */
-        return m_accel->rayIntersect(ray, its, true);
+        return m_bvh->rayIntersect(ray, its, true);
     }
 
     /// \brief Return an axis-aligned box that bounds the scene
     const BoundingBox3f &getBoundingBox() const {
-        return m_accel->getBoundingBox();
+        return m_bvh->getBoundingBox();
     }
 
     /**
@@ -109,7 +111,9 @@ private:
     Integrator *m_integrator = nullptr;
     Sampler *m_sampler = nullptr;
     Camera *m_camera = nullptr;
-    Accel *m_accel = nullptr;
+    // Accel *m_accel = nullptr;
+    BVH *m_bvh = nullptr;
+    std::vector<Mesh *> m_lights;
 };
 
 NORI_NAMESPACE_END

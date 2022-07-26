@@ -99,8 +99,11 @@ bool Accel::traverseOctree(Ray3f &ray, OctNode* node, Intersection &its, uint32_
     }
 
     for(OctNode* child : node->children){
-        if(child->oct_bbox.rayIntersect(ray) && traverseOctree(ray, child, its, f, shadowRay))
+        if(child->oct_bbox.rayIntersect(ray) && traverseOctree(ray, child, its, f, shadowRay)){
             hit = true;
+            if(shadowRay)
+                return true;
+        }
     }
     return hit;
     
@@ -131,6 +134,8 @@ bool Accel::rayIntersect(const Ray3f &ray_, Intersection &its, bool shadowRay) c
     if(m_root->oct_bbox.rayIntersect(ray))
         foundIntersection = traverseOctree(ray, m_root, its, f, shadowRay);
 
+    if(shadowRay)
+        return foundIntersection;
     /* Brute force search through all triangles */
 /*    for (uint32_t idx = 0; idx < m_mesh->getTriangleCount(); ++idx) {
         float u, v, t;
