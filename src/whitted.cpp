@@ -32,7 +32,6 @@ public:
             Le += its.mesh->getEmitter()->eval(rec);
         }
 
-        float weights = 1.0f / scene->getLights().size();
         auto Lr = Color3f(0.0f);
         for(auto light : scene->getLights()){
             // sample the area lights
@@ -46,7 +45,7 @@ public:
                 // eval brdf
                 BSDFQueryRecord bRec(its.toLocal(-ray.d), its.toLocal(-rec.wo), ESolidAngle);
                 auto brdf = its.mesh->getBSDF()->eval(bRec);
-                Lr += brdf * throughput * weights * std::max(cosTheta, 0.0f); 
+                Lr += brdf * throughput * std::max(cosTheta, 0.0f); 
                 // Lr += Color3f(1.0f);
             }
         }

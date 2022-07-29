@@ -18,9 +18,9 @@ struct EmitterSampleRecord
 {
     const Mesh* sampleMesh;
 
-    Point3f samplePoint;
-
     Point3f surfacePoint;
+
+    Point3f samplePoint;
 
     float pdf;
 
@@ -38,6 +38,10 @@ struct EmitterSampleRecord
 
     EmitterSampleRecord(const Mesh *mesh, const Vector3f &samp_wo, const Normal3f &samp_normal) 
         : sampleMesh(mesh), wo(samp_wo), sampleNormal(samp_normal), cosTheta(samp_wo.dot(samp_normal)){ }
+
+    EmitterSampleRecord(const Mesh *mesh, const Point3f &surf_point, const Point3f &samp_point, const Normal3f &samp_normal) 
+        : sampleMesh(mesh), surfacePoint(surf_point), samplePoint(samp_point), wo((surf_point-samp_point).normalized()), 
+          sampleNormal(samp_normal), distance2((surf_point-samp_point).squaredNorm()), cosTheta(wo.dot(samp_normal)){ }
 };
 
 class Emitter : public NoriObject {
