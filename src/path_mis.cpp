@@ -42,7 +42,7 @@ public:
                 Color3f L = light->getEmitter()->sample(sampler, rec);
                 Ray3f shadowRay = Ray3f(rec.surfacePoint, -rec.wo, Epsilon, std::sqrt(rec.distance2) - Epsilon);
                 
-                BSDFQueryRecord bRec(its.toLocal(-ray_out.d), its.toLocal(-rec.wo), ESolidAngle);
+                BSDFQueryRecord bRec(its.toLocal(-ray_out.d), its.toLocal(-rec.wo), ESolidAngle, its.uv, its.p);
                 Color3f brdf = its.mesh->getBSDF()->eval(bRec);
 
                 if(!scene->rayIntersect(shadowRay)){
@@ -51,14 +51,14 @@ public:
                     Color3f L_direct = L * brdf * throughput * std::abs(Frame::cosTheta(bRec.wo));   
                     if(light_pdf!=0.0f && brdf_pdf!=0.0f){
                         float mis_light = light_pdf / (light_pdf + brdf_pdf);                        
-                        L_direct *= mis_light;   
+                        L_direct *= mis_light;
                     }
                     Lo += L_direct;        
                 }   
             }
 
             // indirect
-            BSDFQueryRecord inRec(its.toLocal(-ray_out.d));
+            BSDFQueryRecord inRec(its.toLocal(-ray_out.d), its.uv, its.p);
             throughput *= its.mesh->getBSDF()->sample(inRec, sampler->next2D());
             ray_out = Ray3f(its.p, its.toWorld(inRec.wo));
             if(scene->rayIntersect(ray_out, its)){

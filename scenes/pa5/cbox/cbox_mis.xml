@@ -15,7 +15,7 @@
 	</camera>
 
 	<sampler type="independent">
-		<integer name="sampleCount" value="256"/>
+		<integer name="sampleCount" value="64"/>
 	</sampler>
 
 	<mesh type="obj">
@@ -42,16 +42,47 @@
 		</bsdf>
 	</mesh>
 
-	<mesh type="obj">
+<!-- 	<mesh type="obj">
 		<string name="filename" value="meshes/sphere1.obj"/>
 
 		<bsdf type="mirror"/>
-	</mesh>
+	</mesh> -->
 
 	<mesh type="obj">
 		<string name="filename" value="meshes/sphere2.obj"/>
-
-		<bsdf type="dielectric"/>
+		<transform name="toWorld">
+			<translate value="0.5, 0, 0"/>
+			<scale value="0.6, 0.6, 0.6"/>		
+		</transform>
+		<bsdf type="microfacet">
+			<color name="albedo" value="0.955 0.638 0.538"/>
+			<float name="alpha" value="0.7"/>
+			<float name="metalic" value="0.3"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/sphere2.obj"/>
+		<transform name="toWorld">
+			<translate value="-0.5, 0, 0"/>
+			<scale value="0.6, 0.6, 0.6"/>		
+		</transform>
+		<bsdf type="microfacet">
+			<color name="albedo" value="0.955 0.638 0.538"/>
+			<float name="alpha" value="0.5"/>
+			<float name="metalic" value="0.5"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/sphere2.obj"/>
+		<transform name="toWorld">
+			<translate value="-1.5, 0, 0"/>
+			<scale value="0.6, 0.6, 0.6"/>		
+		</transform>
+		<bsdf type="microfacet">
+			<color name="albedo" value="0.955 0.638 0.538"/>
+			<float name="alpha" value="0.3"/>
+			<float name="metalic" value="0.8"/>
+		</bsdf>
 	</mesh>
 
 	<mesh type="obj">

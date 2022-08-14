@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='utf-8'?>
+<scene>
+	<!-- Independent sample generator, 64 samples per pixel -->
+	<sampler type="independent">
+		<integer name="sampleCount" value="64"/>
+	</sampler>
+
+	<!-- Use the simple point light integrator -->
+    <integrator type="whitted"/>
+
+	<!-- Load the Ajax bust (a freely available scan from the Jotero forum) -->
+	<mesh type="obj">
+		<string name="filename" value="./spot.obj"/>
+
+		<bsdf type="microfacet">
+			<color name="kd" value="0.5 0.5 0.5"/>
+			<string name="kd_tex" value="/home/cs18/Nori/nori/scenes/texture/spot_texture.png"/>
+			<float name="alpha" value="0.02"/>
+		</bsdf>
+	</mesh>
+
+    <!-- Area light source -->
+	<mesh type="obj">
+		<string name="filename" value="light.obj"/>
+
+		<emitter type="area">
+            <color name="radiance" value="20 20 20"/>
+		</emitter>
+	</mesh>
+
+	<!-- Render the scene viewed by a perspective camera -->
+	<camera type="perspective">
+        <!-- 3D origin, target point, and 'up' vector -->
+		<transform name="toWorld">
+            <lookat target="0, 0, 0"
+                    origin="-10, 0, 0"
+                    up="0, 1.0, 0.0"/>
+		</transform>
+
+		<!-- Field of view: 30 degrees -->
+		<float name="fov" value="30"/>
+
+		<!-- 768 x 768 pixels -->
+		<integer name="width" value="768"/>
+		<integer name="height" value="768"/>
+	</camera>
+</scene>

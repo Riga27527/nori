@@ -7,6 +7,7 @@
 #include <nori/bsdf.h>
 #include <nori/frame.h>
 #include <nori/warp.h>
+#include <nori/texture.h>
 
 NORI_NAMESPACE_BEGIN
 
@@ -16,7 +17,15 @@ NORI_NAMESPACE_BEGIN
 class Diffuse : public BSDF {
 public:
     Diffuse(const PropertyList &propList) {
-        m_albedo = propList.getColor("albedo", Color3f(0.5f));
+        m_type = BSDFType::BSDF_DIFFUSE;
+
+        std::string tex_name = propList.getString("albedo_tex", "none");
+        if(tex_name == "none")
+            m_albedo = propList.getColor("albedo", Color3f(0.5f));
+        else{
+            m_hasTexture = true;
+            m_texture = Texture(tex_name);
+        }
     }
 
     /// Evaluate the BRDF model
@@ -29,7 +38,10 @@ public:
             return Color3f(0.0f);
 
         /* The BRDF is simply the albedo / pi */
-        return m_albedo * INV_PI;
+        if(m_hasTexture && bRec.uv_valid)
+            return m_texture.sample2D(bRec.uv) * INV_PI;
+        else
+            return m_albedo * INV_PI;
     }
 
     /// Compute the density of \ref sample() wrt. solid angles
@@ -67,7 +79,7 @@ public:
 
         /* eval() / pdf() * cos(theta) = albedo. There
            is no need to call these functions. */
-        return m_albedo;
+        return eval(bRec) / pdf(bRec) * Frame::cosTheta(bRec.wo);
     }
 
     bool isDiffuse() const {
@@ -85,6 +97,8 @@ public:
     EClassType getClassType() const { return EBSDF; }
 private:
     Color3f m_albedo;
+    Texture m_texture;
+    bool    m_hasTexture = false;
 };
 
 NORI_REGISTER_CLASS(Diffuse, "diffuse");

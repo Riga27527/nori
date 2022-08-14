@@ -19,7 +19,7 @@ public:
         if(!its.mesh->getBSDF()->isDiffuse()){
             if(sampler->next1D() >= 0.95f)
                 return Color3f(0.0f);
-            BSDFQueryRecord bRec(its.toLocal(-ray.d));
+            BSDFQueryRecord bRec(its.toLocal(-ray.d), its.uv, its.p);
             its.mesh->getBSDF()->sample(bRec, sampler->next2D());
             const Ray3f ray_out = Ray3f(its.p, its.toWorld(bRec.wo));
             return Li(scene, sampler, ray_out) / 0.95f;
@@ -43,7 +43,7 @@ public:
 
             if(!scene->rayIntersect(shadowRay)){
                 // eval brdf
-                BSDFQueryRecord bRec(its.toLocal(-ray.d), its.toLocal(-rec.wo), ESolidAngle);
+                BSDFQueryRecord bRec(its.toLocal(-ray.d), its.toLocal(-rec.wo), ESolidAngle, its.uv, its.p);
                 auto brdf = its.mesh->getBSDF()->eval(bRec);
                 Lr += brdf * throughput * std::max(cosTheta, 0.0f); 
                 // Lr += Color3f(1.0f);

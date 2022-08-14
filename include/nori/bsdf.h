@@ -10,6 +10,13 @@
 
 NORI_NAMESPACE_BEGIN
 
+enum class BSDFType{
+    BSDF_DIFFUSE,
+    BSDF_MIRROR,
+    BSDF_DIELECTRIC,
+    BSDF_MICROFACET,
+    BSDF_NULL
+};
 /**
  * \brief Convenience data structure used to pass multiple
  * parameters to the evaluation and sampling routines in \ref BSDF
@@ -27,6 +34,14 @@ struct BSDFQueryRecord {
     /// Measure associated with the sample
     EMeasure measure;
 
+    // UV
+    Point2f uv;
+
+    // Point
+    Point3f p;
+
+    bool uv_valid = false;
+
     /// Create a new record for sampling the BSDF
     BSDFQueryRecord(const Vector3f &wi)
         : wi(wi), eta(1.f), measure(EUnknownMeasure) { }
@@ -35,6 +50,13 @@ struct BSDFQueryRecord {
     BSDFQueryRecord(const Vector3f &wi,
             const Vector3f &wo, EMeasure measure)
         : wi(wi), wo(wo), eta(1.f), measure(measure) { }
+
+    BSDFQueryRecord(const Vector3f &wi, const Point2f _uv, const Point3f _p)
+        : wi(wi), eta(1.f), measure(EUnknownMeasure), uv(_uv), p(_p), uv_valid(true){ }
+
+    BSDFQueryRecord(const Vector3f &wi,
+        const Vector3f &wo, EMeasure measure, const Point2f _uv, const Point3f _p)
+    : wi(wi), wo(wo), eta(1.f), measure(measure), uv(_uv), p(_p), uv_valid(true) { }
 };
 
 /**
@@ -98,6 +120,8 @@ public:
      * or not to store photons on a surface
      */
     virtual bool isDiffuse() const { return false; }
+
+    BSDFType m_type;
 };
 
 NORI_NAMESPACE_END

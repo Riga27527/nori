@@ -2,8 +2,11 @@ cmake_minimum_required (VERSION 3.2)
 project(nori)
 
 add_subdirectory(ext ext_build)
+find_package(OpenCV REQUIRED)
 
 include_directories(
+  # OpenCV
+  ${OpenCV_INCLUDE_DIRS}
   # Nori include files
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   # tinyformat string formatting library
@@ -65,6 +68,7 @@ add_executable(nori
   include/nori/vector.h
   include/nori/warp.h
   include/nori/bvh.h
+  include/nori/texture.h
 
   # Source code files
   src/bitmap.cpp
@@ -98,6 +102,7 @@ add_executable(nori
   src/path_mats.cpp
   src/path_ems.cpp
   src/path_mis.cpp
+  src/texture.cpp
 )
 
 add_definitions(${NANOGUI_EXTRA_DEFS})
@@ -105,12 +110,14 @@ add_definitions(${NANOGUI_EXTRA_DEFS})
 # The following lines build the warping test application
 add_executable(warptest
   include/nori/warp.h
+  include/nori/texture.h
   src/warp.cpp
   src/warptest.cpp
   src/microfacet.cpp
   src/object.cpp
   src/proplist.cpp
   src/common.cpp
+  src/texture.cpp
 )
 
 if (WIN32)
@@ -119,7 +126,8 @@ else()
   target_link_libraries(nori tbb_static pugixml IlmImf nanogui ${NANOGUI_EXTRA_LIBS})
 endif()
 
-target_link_libraries(warptest tbb_static nanogui ${NANOGUI_EXTRA_LIBS})
+target_link_libraries(warptest tbb_static nanogui ${NANOGUI_EXTRA_LIBS} ${OpenCV_LIBRARIES})
+target_link_libraries(nori ${OpenCV_LIBRARIES})
 
 # Force colored output for the ninja generator
 if (CMAKE_GENERATOR STREQUAL "Ninja")
