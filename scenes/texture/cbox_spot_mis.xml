@@ -49,11 +49,16 @@
 			<scale value="0.8, 0.8, 0.8"/>
 			<translate value="0.15, -0.0001, 0"/>		
 		</transform>
-		<bsdf type="microfacet">
+<!-- 		<bsdf type="microfacet">
 			<color name="albedo" value="0.5 0.5 0.5"/>
 			<string name="albedo_tex" value="/home/cs18/Nori/nori/scenes/texture/spot_texture.png"/>
 			<float name="alpha" value="0.2"/>
 			<float name="metalic" value="0.8"/>
+		</bsdf> -->
+		<bsdf type="diffuse">
+			<color name="albedo" value="0.6 0.5 0.2"/>
+			<!-- <string name="albedo_tex" value="/home/cs18/Nori/nori/scenes/texture/spot_texture.png"/> -->
+			<float name="sigma" value="20"/>
 		</bsdf>
 	</mesh>
 

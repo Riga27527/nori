@@ -26,3 +26,5 @@ rules.ninja
 Debug
 x64
 core
+*.tags
+*.tags_sorted_by_file

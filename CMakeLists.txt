@@ -103,6 +103,7 @@ add_executable(nori
   src/path_ems.cpp
   src/path_mis.cpp
   src/texture.cpp
+  src/oren_nayar.cpp
 )
 
 add_definitions(${NANOGUI_EXTRA_DEFS})
